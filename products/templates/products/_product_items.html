@@ -1,0 +1,46 @@
+﻿{% for product in products %}
+    <div class="product-card">
+        <!-- Изображение товара -->
+        <div class="product-image">
+            {% if product.images.all %}
+                {% with product.images.first as first_image %}
+                    <img src="{{ first_image.image.url }}" 
+                         alt="{{ product.title }}" 
+                         style="width: 100%; height: 100%; object-fit: cover;">
+                {% endwith %}
+            {% else %}
+                <!-- Заглушка, если фото нет -->
+                <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #2A9FD8; font-size: 3rem;">
+                    📷
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="product-info">
+            <h2 class="product-title">
+                <a href="/product/{{ product.id }}/">{{ product.title }}</a>
+            </h2>
+            
+            <div class="product-condition {% if product.condition == 'new' %}condition-new{% else %}condition-used{% endif %}">
+                {% if product.condition == 'new' %}НОВЫЙ{% else %}Б/У{% endif %}
+            </div>
+            
+            <div class="product-price">{{ product.price }} ₴</div>
+            
+            <p class="product-description">{{ product.description }}</p>
+            
+            {% if product.flaws %}
+                <div class="flaws-box">
+                    <strong>⚠️ Недостатки:</strong> {{ product.flaws }}
+                </div>
+            {% endif %}
+            
+            <div class="product-actions">
+                <button class="buy-button">🛒 Купить сейчас</button>
+                <button class="detail-button" onclick="window.location.href='/product/{{ product.id }}/'">
+                    🔍 Подробнее
+                </button>
+            </div>
+        </div>
+    </div>
+{% endfor %}

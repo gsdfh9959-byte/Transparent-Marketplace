@@ -1,0 +1,142 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product.title }} — Transparent Marketplace</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #f5f7fa; color: #333; line-height: 1.6; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+        
+        /* Шапка (как на главной) */
+        .site-header { background: linear-gradient(135deg, #2A9FD8 0%, #1e87c0 100%); color: white; padding: 1rem 0; margin-bottom: 2rem; }
+        .logo { font-size: 1.5rem; font-weight: 700; text-align: center; }
+        
+        /* Хлебные крошки и навигация */
+        .breadcrumb { margin-bottom: 1.5rem; font-size: 0.9rem; }
+        .breadcrumb a { color: #2A9FD8; text-decoration: none; }
+        
+        /* Основной контент - две колонки */
+        .product-page { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }
+        
+        /* Левая колонка - Галерея */
+        .gallery-main { margin-bottom: 1rem; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .gallery-main img { width: 100%; height: auto; display: block; }
+        .gallery-thumbs { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .thumb { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid transparent; }
+        .thumb.active { border-color: #2A9FD8; }
+        
+        /* Правая колонка - Информация */
+        .product-condition { display: inline-block; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; margin-bottom: 1rem; }
+        .condition-new { background: #d4edda; color: #155724; }
+        .condition-used { background: #fff3cd; color: #856404; }
+        .product-price { color: #2A9FD8; font-size: 2.5rem; font-weight: 700; margin: 1rem 0; }
+        .product-actions { display: flex; gap: 1rem; margin: 2rem 0; }
+        .btn { padding: 1rem 2rem; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; font-size: 1rem; flex: 1; text-align: center; text-decoration: none; }
+        .btn-buy { background: #2A9FD8; color: white; }
+        .btn-cart { background: #f8f9fa; color: #333; border: 1px solid #dee2e6; }
+        .btn-fav { background: #fff; color: #e74c3c; border: 1px solid #e74c3c; }
+        
+        /* Блоки описания */
+        .info-section { background: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; box-shadow: 0 3px 10px rgba(0,0,0,0.05); }
+        .info-section h3 { margin-bottom: 1rem; color: #222; }
+        .flaws-box { background: #f8f9fa; padding: 1rem; border-radius: 8px; border-left: 4px solid #e74c3c; }
+        
+        /* Подвал */
+        .site-footer { text-align: center; padding: 2rem 0; margin-top: 3rem; color: #666; border-top: 1px solid #dee2e6; }
+    </style>
+</head>
+<body>
+    <!-- Шапка сайта -->
+    <header class="site-header">
+        <div class="container">
+            <div class="logo">Transparent Marketplace</div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Навигация -->
+        <div class="breadcrumb">
+            <a href="/">Главная</a> &gt; <span>{{ product.title }}</span>
+        </div>
+        
+        <div class="product-page">
+            <!-- ЛЕВАЯ КОЛОНКА: Галерея -->
+            <div class="product-gallery">
+                <div class="gallery-main">
+                    {% if product.images.first %}
+                    <img id="mainImage" src="{{ product.images.first.image.url }}" alt="{{ product.title }}">
+                    {% else %}
+                    <img id="mainImage" src="https://via.placeholder.com/600x400/4A90E2/FFFFFF?text=Нет+фото" alt="{{ product.title }}">
+                    {% endif %}
+                </div>
+                
+                <div class="gallery-thumbs">
+                    {% for image in product.images.all %}
+                    <img class="thumb {% if forloop.first %}active{% endif %}" 
+                         src="{{ image.image.url }}" 
+                         alt="Фото {{ forloop.counter }}"
+                         onclick="document.getElementById('mainImage').src = this.src; 
+                                  document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active')); 
+                                  this.classList.add('active');">
+                    {% empty %}
+                    <p>Нет дополнительных фото</p>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- ПРАВАЯ КОЛОНКА: Информация и действия -->
+            <div class="product-info">
+                <!-- Статусы -->
+                <div class="product-condition {% if product.condition == 'new' %}condition-new{% else %}condition-used{% endif %}">
+                    {% if product.condition == 'new' %}НОВЫЙ{% else %}Б/У{% endif %}
+                </div>
+                {% if not product.is_available %}
+                <div style="color: #e74c3c; font-weight: 600; margin-bottom: 1rem;">⛔ НЕТ В НАЛИЧИИ</div>
+                {% endif %}
+                
+                <!-- Название и цена -->
+                <h1>{{ product.title }}</h1>
+                <div class="product-price">{{ product.price }} ₴</div>
+                
+                <!-- Кнопки действий -->
+                <div class="product-actions">
+                    <button class="btn btn-buy">🛒 Купить сейчас</button>
+                    <button class="btn btn-cart">📦 В корзину</button>
+                    <button class="btn btn-fav">❤️ В избранное</button>
+                </div>
+                
+                <!-- Блок с описанием -->
+                <div class="info-section">
+                    <h3>📋 Описание товара</h3>
+                    <p>{{ product.description|linebreaks }}</p>
+                </div>
+                
+                <!-- Блок с недостатками (если есть и товар Б/У) -->
+                {% if product.flaws and product.condition == 'used' %}
+                <div class="info-section">
+                    <h3>⚠️ Недостатки и дефекты</h3>
+                    <div class="flaws-box">
+                        {{ product.flaws|linebreaks }}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Блок с информацией о продавце -->
+                <div class="info-section">
+                    <h3>👤 Продавец</h3>
+                    <p><strong>Имя:</strong> {{ product.seller.username }}</p>
+                    <p><strong>На площадке с:</strong> {{ product.seller.date_joined|date:"d.m.Y" }}</p>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer class="site-footer">
+        <div class="container">
+            <p>Transparent Marketplace — честные Б/У товары. Без чатов. Без скрытых дефектов.</p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,478 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transparent Marketplace — Честные Б/У товары</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 0;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2A9FD8 0%, #1e87c0 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        
+        .tagline {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 0.3rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        /* ===== МАКЕТ СТРАНИЦЫ С ФИЛЬТРАМИ ===== */
+        .page-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+        
+        /* ===== ПАНЕЛЬ ФИЛЬТРОВ ===== */
+        .filters-panel {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: 1rem;
+        }
+        
+        .filters-panel h3 {
+            margin-bottom: 1.5rem;
+            color: #222;
+            font-size: 1.2rem;
+        }
+        
+        .filter-group {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .filter-group:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .filter-group h4 {
+            margin-bottom: 0.8rem;
+            font-size: 1rem;
+            color: #444;
+        }
+        
+        /* Поля ввода цены */
+        .price-inputs {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .filter-input {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        
+        /* Чекбоксы */
+        .filter-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+        
+        .filter-checkbox input[type="checkbox"] {
+            width: 1.1rem;
+            height: 1.1rem;
+            cursor: pointer;
+        }
+        
+        /* Кнопки фильтров */
+        .filter-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+        
+        .filter-btn {
+            padding: 0.8rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+        
+        .filter-btn-apply {
+            background: #2A9FD8;
+            color: white;
+        }
+        
+        .filter-btn-apply:hover {
+            background: #1e87c0;
+        }
+        
+        .filter-btn-reset {
+            background: #f8f9fa;
+            color: #495057;
+            border: 1px solid #dee2e6;
+        }
+        
+        .filter-btn-reset:hover {
+            background: #e9ecef;
+        }
+        
+        /* ===== СЕТКА КАРТОЧЕК ===== */
+        .products-section {
+            width: 100%;
+        }
+        
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+        }
+        
+        .product-image {
+            height: 200px;
+            background: linear-gradient(45deg, #e0f7ff, #f0f8ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2A9FD8;
+            font-size: 3rem;
+        }
+        
+        .product-info {
+            padding: 1.5rem;
+        }
+        
+        /* Название товара */
+        .product-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #222;
+        }
+        .product-title a {
+            color: inherit;
+            text-decoration: none;
+        }
+        .product-title a:hover {
+            color: #2A9FD8;
+            text-decoration: underline;
+        }
+        
+        .product-price {
+            color: #2A9FD8;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0.8rem 0;
+        }
+        
+        .product-condition {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+        }
+        
+        .condition-new {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .condition-used {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .product-description {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+        
+        .flaws-box {
+            background: #f8f9fa;
+            padding: 0.8rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        /* Контейнер для кнопок */
+        .product-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .buy-button {
+            background: #2A9FD8;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s;
+            font-size: 1rem;
+        }
+        
+        .buy-button:hover {
+            background: #1e87c0;
+        }
+        
+        /* Кнопка Подробнее */
+        .detail-button {
+            background: #f8f9fa;
+            color: #495057;
+            border: 1px solid #dee2e6;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+        
+        .detail-button:hover {
+            background: #e9ecef;
+            border-color: #2A9FD8;
+            color: #2A9FD8;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 4rem;
+            color: #888;
+        }
+        
+        h1 {
+            color: #222;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">Transparent Marketplace</div>
+            <div class="tagline">Честные Б/У товары. Без чатов. Без скрытых дефектов.</div>
+        </div>
+    </header>
+    
+    <main class="container">
+        <h1>📦 Свежие товары</h1>
+        
+        <div class="page-layout">
+            <!-- ЛЕВАЯ ПАНЕЛЬ: ФИЛЬТРЫ -->
+            <aside class="filters-panel">
+                <h3>🔍 Фильтры</h3>
+                
+                <!-- Фильтр по цене -->
+                <div class="filter-group">
+                    <h4>Цена, ₴</h4>
+                    <div class="price-inputs">
+                        <input type="number" id="priceMin" placeholder="От" min="0" class="filter-input">
+                        <span>—</span>
+                        <input type="number" id="priceMax" placeholder="До" min="0" class="filter-input">
+                    </div>
+                </div>
+
+                <!-- Фильтр по состоянию -->
+                <div class="filter-group">
+                    <h4>Состояние</h4>
+                    <label class="filter-checkbox">
+                        <input type="checkbox" name="condition" value="new" checked>
+                        <span>Новый</span>
+                    </label>
+                    <label class="filter-checkbox">
+                        <input type="checkbox" name="condition" value="used" checked>
+                        <span>Б/У</span>
+                    </label>
+                </div>
+
+                <!-- Фильтр по наличию -->
+                <div class="filter-group">
+                    <h4>Наличие</h4>
+                    <label class="filter-checkbox">
+                        <input type="checkbox" name="availability" value="available" checked>
+                        <span>В наличии</span>
+                    </label>
+                </div>
+
+                <!-- Кнопки управления -->
+                <div class="filter-actions">
+                    <button id="applyFilters" class="filter-btn filter-btn-apply">Применить фильтры</button>
+                    <button id="resetFilters" class="filter-btn filter-btn-reset">Сбросить всё</button>
+                </div>
+            </aside>
+
+            <!-- ПРАВАЯ ЧАСТЬ: СЕТКА ТОВАРОВ -->
+            <div class="products-section">
+                {% if products %}
+                    <div class="products-grid" id="productsContainer">
+                        <!-- Карточки товаров подключаются из отдельного файла -->
+                        {% include 'products/_product_items.html' %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <h2>😕 Товаров пока нет</h2>
+                        <p>Будь первым, кто добавит товар на нашу прозрачную площадку!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+
+    <!-- Подключаем JavaScript для фильтров -->
+    <script>
+    
+    // Ждём загрузки DOM
+    document.addEventListener('DOMContentLoaded', function() {
+        // Элементы
+        const applyBtn = document.getElementById('applyFilters');
+        const resetBtn = document.getElementById('resetFilters');
+        const productsContainer = document.getElementById('productsContainer');
+
+        // Функция сбора параметров фильтров
+        function getFilters() {
+            const params = new URLSearchParams();
+            
+            // Цена
+            const priceMin = document.getElementById('priceMin').value;
+            const priceMax = document.getElementById('priceMax').value;
+            if (priceMin) params.append('price_min', priceMin);
+            if (priceMax) params.append('price_max', priceMax);
+            
+            // Состояние (только отмеченные чекбоксы)
+            document.querySelectorAll('input[name="condition"]:checked').forEach(cb => {
+                params.append('condition[]', cb.value);
+            });
+            
+            // Наличие
+            const availability = document.querySelector('input[name="availability"]:checked');
+            if (availability) params.append('availability', availability.value);
+            
+            return params;
+        }
+
+        // Функция применения фильтров (AJAX)
+        function applyFilters() {
+            const params = getFilters();
+            
+            // Показываем индикатор загрузки
+            productsContainer.innerHTML = '<div class="empty-state">Загрузка...</div>';
+            
+            // Отправляем AJAX-запрос
+            fetch(`/filter-products/?${params}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.count === 0) {
+                        productsContainer.innerHTML = `
+                            <div class="empty-state">
+                                <h2>😕 Товаров не найдено</h2>
+                                <p>Попробуйте изменить параметры фильтров</p>
+                            </div>
+                        `;
+                    } else {
+                        productsContainer.innerHTML = data.html;
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка фильтрации:', error);
+                    productsContainer.innerHTML = '<div class="empty-state">Ошибка загрузки</div>';
+                });
+        }
+
+        // Функция сброса фильтров
+        function resetFilters() {
+            // Сбрасываем поля цены
+            document.getElementById('priceMin').value = '';
+            document.getElementById('priceMax').value = '';
+            
+            // Отмечаем все чекбоксы "состояние"
+            document.querySelectorAll('input[name="condition"]').forEach(cb => cb.checked = true);
+            
+            // Отмечаем чекбокс "наличие"
+            document.querySelector('input[name="availability"]').checked = true;
+            
+            // Применяем сброшенные фильтры (т.е. показываем все товары)
+            applyFilters();
+        }
+
+        // Обработчики событий
+        applyBtn.addEventListener('click', applyFilters);
+        resetBtn.addEventListener('click', resetFilters);
+        
+        // Автоматическое применение при изменении чекбоксов (опционально)
+        document.querySelectorAll('input[name="condition"], input[name="availability"]').forEach(input => {
+            input.addEventListener('change', applyFilters);
+        });
+        
+        // Автоматическое применение при нажатии Enter в полях цены
+        document.getElementById('priceMin').addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') applyFilters();
+        });
+        document.getElementById('priceMax').addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') applyFilters();
+        });
+    });
+</script>
+    
+</body>
+</html>
