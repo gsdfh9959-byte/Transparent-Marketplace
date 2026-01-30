@@ -35,12 +35,22 @@
                 </div>
             {% endif %}
             
-            <div class="product-actions">
-                <button class="buy-button">🛒 Купить сейчас</button>
-                <button class="detail-button" onclick="window.location.href='/product/{{ product.id }}/'">
-                    🔍 Подробнее
-                </button>
-            </div>
+           <div class="product-actions">
+    <!-- Кнопка "В корзину" с data-атрибутом product-id -->
+    <button class="cart-button" data-product-id="{{ product.id }}">
+        🛒 В корзину
+    </button>
+    
+    <!-- Кнопка "В избранное" с data-атрибутом product-id -->
+    <button class="favorite-button {% if product.id in user_favorites %}active{% endif %}" 
+            data-product-id="{{ product.id }}">
+        {% if product.id in user_favorites %}❤️{% else %}🤍{% endif %}
+    </button>
+    
+    <button class="detail-button" onclick="window.location.href='/product/{{ product.id }}/'">
+        🔍 Подробнее
+    </button>
+</div>
         </div>
     </div>
 {% endfor %}

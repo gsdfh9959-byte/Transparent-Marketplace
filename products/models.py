@@ -45,10 +45,6 @@ class Product(models.Model):
     def __str__(self):
         return self.title
 
-
-# ====== НОВАЯ МОДЕЛЬ ДЛЯ ФОТО ======
-# ОТДЕЛЬНЫЙ класс, НЕ внутри класса Product!
-
 class ProductImage(models.Model):
     """Модель для хранения нескольких изображений товара"""
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
@@ -60,3 +56,49 @@ class ProductImage(models.Model):
     
     class Meta:
         ordering = ['uploaded_at']
+
+# ====== НОВЫЕ МОДЕЛИ ДЛЯ КОРЗИНЫ И ИЗБРАННОГО ======
+
+class Cart(models.Model):
+    """Корзина покупок. Один пользователь — одна корзина."""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cart')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Cart of {self.user.username}"
+
+    # Метод для подсчёта общей суммы в корзине
+    def total_price(self):
+        return sum(item.total_price() for item in self.items.all())
+
+class CartItem(models.Model):
+    """Элемент корзины: связь корзины с товаром и его количество."""
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1, verbose_name="Количество")
+
+    class Meta:
+        # Уникальная связка "корзина-товар", чтобы один товар не повторялся
+        unique_together = ('cart', 'product')
+
+    def __str__(self):
+        return f"{self.quantity} x {self.product.title} in cart"
+
+    # Метод для подсчёта стоимости по позиции (цена * количество)
+    def total_price(self):
+        return self.product.price * self.quantity
+
+class Favorite(models.Model):
+    """Избранное. Пользователь может добавлять много товаров."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        # Уникальная связка "пользователь-товар"
+        unique_together = ('user', 'product')
+        ordering = ['-added_at']
+
+    def __str__(self):
+        return f"{self.product.title} in favorites of {self.user.username}"

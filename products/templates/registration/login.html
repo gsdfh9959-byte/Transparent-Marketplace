@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Вход | Transparent Marketplace</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: #f5f7fa; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .auth-container { background: white; padding: 2.5rem; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h2 { color: #2A9FD8; margin-bottom: 1.5rem; text-align: center; }
+        .form-group { margin-bottom: 1.2rem; }
+        label { display: block; margin-bottom: 0.5rem; color: #555; font-weight: 500; }
+        input[type="text"], input[type="password"] { width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
+        .btn { width: 100%; padding: 0.9rem; background: #2A9FD8; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 0.5rem; }
+        .btn:hover { background: #1e87c0; }
+        .links { text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: #666; }
+        .links a { color: #2A9FD8; text-decoration: none; }
+        .error { color: #e74c3c; background: #fde8e8; padding: 0.8rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <h2>🔐 Вход в аккаунт</h2>
+        
+        {% if form.errors %}
+        <div class="error">Неверное имя пользователя или пароль. Попробуйте снова.</div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_username">Имя пользователя</label>
+                <input type="text" name="username" id="id_username" required>
+            </div>
+            <div class="form-group">
+                <label for="id_password">Пароль</label>
+                <input type="password" name="password" id="id_password" required>
+            </div>
+            <button type="submit" class="btn">Войти</button>
+        </form>
+
+        <div class="links">
+            <p>Нет аккаунта? <a href="/signup/">Зарегистрируйтесь</a></p>
+            <p><a href="/">← Вернуться на главную</a></p>
+        </div>
+    </div>
+</body>
+</html>

@@ -305,15 +305,70 @@
             margin-bottom: 1.5rem;
             font-weight: 600;
         }
+        /* Индикатор корзины в шапке */
+.cart-indicator {
+    position: absolute;
+    top: 1rem;
+    right: 2rem;
+    background: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    color: #2A9FD8;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    cursor: pointer;
+}
+.cart-indicator:hover {
+    background: #f8f9fa;
+}
+/* Ссылки аутентификации */
+.auth-links {
+    position: absolute;
+    top: 1rem;
+    right: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+.auth-links a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.15);
+}
+.auth-links a:hover {
+    background: rgba(255,255,255,0.25);
+}
+.auth-links span {
+    color: white;
+    margin-right: 1rem;
+}
     </style>
 </head>
 <body>
-    <header class="header">
-        <div class="container">
-            <div class="logo">Transparent Marketplace</div>
-            <div class="tagline">Честные Б/У товары. Без чатов. Без скрытых дефектов.</div>
+   <header class="header">
+    <div class="container">
+        <div class="logo">Transparent Marketplace</div>
+        <div class="tagline">Честные Б/У товары. Без чатов. Без скрытых дефектов.</div>
+        
+        <div class="auth-links">
+            {% if user.is_authenticated %}
+                <!-- Если пользователь вошёл -->
+                <span>Привет, <strong>{{ user.username }}</strong>!</span>
+                <a href="/accounts/logout/">Выйти</a>
+                <div class="cart-indicator">
+                    🛒 <span id="cart-counter">0</span>
+                </div>
+            {% else %}
+                <!-- Если пользователь не вошёл -->
+                <a href="/accounts/login/">Войти</a>
+                <a href="/signup/">Регистрация</a>
+            {% endif %}
         </div>
-    </header>
+    </div>
+</header>
     
     <main class="container">
         <h1>📦 Свежие товары</h1>
@@ -381,97 +436,73 @@
 
     <!-- Подключаем JavaScript для фильтров -->
     <script>
-    
-    // Ждём загрузки DOM
-    document.addEventListener('DOMContentLoaded', function() {
-        // Элементы
-        const applyBtn = document.getElementById('applyFilters');
-        const resetBtn = document.getElementById('resetFilters');
-        const productsContainer = document.getElementById('productsContainer');
-
-        // Функция сбора параметров фильтров
-        function getFilters() {
-            const params = new URLSearchParams();
+   
+document.addEventListener('DOMContentLoaded', function() {
+    // ========== ДОБАВЛЕНИЕ В КОРЗИНУ ==========
+    document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const productId = this.dataset.productId;
+            const button = this;
             
-            // Цена
-            const priceMin = document.getElementById('priceMin').value;
-            const priceMax = document.getElementById('priceMax').value;
-            if (priceMin) params.append('price_min', priceMin);
-            if (priceMax) params.append('price_max', priceMax);
-            
-            // Состояние (только отмеченные чекбоксы)
-            document.querySelectorAll('input[name="condition"]:checked').forEach(cb => {
-                params.append('condition[]', cb.value);
-            });
-            
-            // Наличие
-            const availability = document.querySelector('input[name="availability"]:checked');
-            if (availability) params.append('availability', availability.value);
-            
-            return params;
-        }
-
-        // Функция применения фильтров (AJAX)
-        function applyFilters() {
-            const params = getFilters();
-            
-            // Показываем индикатор загрузки
-            productsContainer.innerHTML = '<div class="empty-state">Загрузка...</div>';
-            
-            // Отправляем AJAX-запрос
-            fetch(`/filter-products/?${params}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.count === 0) {
-                        productsContainer.innerHTML = `
-                            <div class="empty-state">
-                                <h2>😕 Товаров не найдено</h2>
-                                <p>Попробуйте изменить параметры фильтров</p>
-                            </div>
-                        `;
-                    } else {
-                        productsContainer.innerHTML = data.html;
+            fetch(`/cart/add/${productId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Меняем вид кнопки
+                    button.innerHTML = '✅ Добавлено';
+                    button.style.background = '#27ae60';
+                    button.disabled = true;
+                    
+                    // Обновляем счетчик в шапке
+                    const counter = document.getElementById('cart-counter');
+                    if (counter) {
+                        counter.textContent = data.cart_items_count;
                     }
-                })
-                .catch(error => {
-                    console.error('Ошибка фильтрации:', error);
-                    productsContainer.innerHTML = '<div class="empty-state">Ошибка загрузки</div>';
-                });
-        }
-
-        // Функция сброса фильтров
-        function resetFilters() {
-            // Сбрасываем поля цены
-            document.getElementById('priceMin').value = '';
-            document.getElementById('priceMax').value = '';
-            
-            // Отмечаем все чекбоксы "состояние"
-            document.querySelectorAll('input[name="condition"]').forEach(cb => cb.checked = true);
-            
-            // Отмечаем чекбокс "наличие"
-            document.querySelector('input[name="availability"]').checked = true;
-            
-            // Применяем сброшенные фильтры (т.е. показываем все товары)
-            applyFilters();
-        }
-
-        // Обработчики событий
-        applyBtn.addEventListener('click', applyFilters);
-        resetBtn.addEventListener('click', resetFilters);
-        
-        // Автоматическое применение при изменении чекбоксов (опционально)
-        document.querySelectorAll('input[name="condition"], input[name="availability"]').forEach(input => {
-            input.addEventListener('change', applyFilters);
-        });
-        
-        // Автоматическое применение при нажатии Enter в полях цены
-        document.getElementById('priceMin').addEventListener('keyup', function(e) {
-            if (e.key === 'Enter') applyFilters();
-        });
-        document.getElementById('priceMax').addEventListener('keyup', function(e) {
-            if (e.key === 'Enter') applyFilters();
+                    
+                    // Показываем уведомление
+                    showNotification(data.message);
+                }
+            })
+            .catch(error => console.error('Error:', error));
         });
     });
+    
+    // ========== ФИЛЬТРЫ (оставь старый код фильтров) ==========
+    // ... твой существующий код фильтров ...
+    
+    // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    function showNotification(message) {
+        const notification = document.createElement('div');
+        notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed; top: 20px; right: 20px;
+            background: #2A9FD8; color: white; padding: 1rem 1.5rem;
+            border-radius: 8px; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        `;
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
+    }
+});
 </script>
     
 </body>
